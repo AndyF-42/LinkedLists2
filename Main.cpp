@@ -4,6 +4,7 @@
 
 #include "Node.h"
 #include <iostream>
+#include <iomanip>
 #include <cstring>
 
 using namespace std;
@@ -24,7 +25,7 @@ int main() {
   while (strcmp(input, "QUIT") != 0) {
     cout << ">> ";
     cin >> input;
-    if (strcmp(input, "ADD") == 0) {
+    if (strcmp(input, "ADD") == 0) { //get data, add directly if empty list, otherwise call function
       char first[20];
       char last[20];
       int id;
@@ -43,20 +44,27 @@ int main() {
       } else {
 	addStudent(head, newStudent);
       }
-    } else if (strcmp(input, "PRINT") == 0) {
+    } else if (strcmp(input, "PRINT") == 0) { //call print function
       printStudents(head);
-    } else if (strcmp(input, "DELETE") == 0) {
+    } else if (strcmp(input, "DELETE") == 0) { //do not delete if empty, if head is the match, adjust here, otherwise call delete function
       if (head == NULL) {
 	cout << "There are no students to delete!" << endl;
       } else {
 	int id;
 	cout << "ID: ";
 	cin >> id;
-	deleteStudent(head, id);
+
+	if (head->getStudent()->getID() == id) {
+	  Node* temp = head;
+	  head = head->getNext();
+	  delete(temp);
+	} else {
+	  deleteStudent(head, id);
+	}
       }
-    } else if (strcmp(input, "AVERAGE") == 0) {
-      float total;
-      int numStudents;
+    } else if (strcmp(input, "AVERAGE") == 0) { //call average function
+      float total = 0;
+      int numStudents = 0;
       averageGPAs(head, total, numStudents);
     } else if (strcmp(input, "QUIT") != 0) { //anything else (besides quit) will be invalid
       cout << "Invalid command." << endl;
@@ -70,48 +78,50 @@ int main() {
 //add a new node (holding a new student) to the linked list
 void addStudent(Node* head, Student* newStudent) {
   Node* current = head;
-  if (current->getNext() == NULL) {
+  if (current->getNext() == NULL) { //once at the end, connect the last node to new node
     current->setNext(new Node(newStudent));
-  } else {
+  } else { //recursively search
     addStudent(head->getNext(), newStudent);
   }
 }
 
 //print out the student data of every node in the linked list
 void printStudents(Node* next) {
-  if (next != NULL) {
+  if (next != NULL) { //while not at the end, print all the data per node then call on next
     cout << next->getStudent()->getFirst();
     cout << " " << next->getStudent()->getLast();
     cout << ", ID: " << next->getStudent()->getID();
-    cout << ", GPA: " << next->getStudent()->getGPA() << endl;
+    cout << ", GPA: " << fixed << setprecision(2) << next->getStudent()->getGPA() << endl;
     printStudents(next->getNext());
   }
 }
 
 //delete the node of the student with the given id
 void deleteStudent(Node* current, int id) {
-  if (current != NULL) {
+  if (current->getNext() != NULL) { //search the next node's data (as long as it is not NULL)
     if (current->getNext()->getStudent()->getID() == id) {
       Node* temp = current->getNext();
       current->setNext(temp->getNext());
       delete(temp);
-    } else {
+    } else { //recursively search only if no match
       deleteStudent(current->getNext(), id);
     }
-  } else {
+  } else { //could not find match
     cout << "There is no student with that ID!" << endl;
   }
 }
 
 //average all the GPAs and print the value
 void averageGPAs(Node* next, float total, int numStudents) {
-  if (next != NULL) {
+  if (next != NULL) { //recursively get to the end and sum all the GPAs and tally the # of students
     total += next->getStudent()->getGPA();
     numStudents++;
     averageGPAs(next->getNext(), total, numStudents);
-  } else {
-    cout << total << endl;
-    cout << numStudents << endl;
-    cout << (total / float(numStudents)) << endl;
+  } else { //once finished, either print there are no students or print the average GPA
+    if (numStudents == 0) {
+      cout << "There are no students to average!" << endl;
+    } else {
+      cout << fixed << setprecision(2) << (total / numStudents) << endl;
+    }
   }
 }
