@@ -8,9 +8,10 @@
 
 using namespace std;
 
-void addStudent(Node* &head, Student* newStudent);
+void addStudent(Node* head, Student* newStudent);
 void printStudents(Node* next);
-void deleteStudent(Node* head);
+void deleteStudent(Node* head, int id);
+void averageGPAs(Node* head, float total, int numStudents);
 
 int main() {
 
@@ -18,18 +19,45 @@ int main() {
   cout << "Valid commands are \"ADD\", \"PRINT\", \"DELETE\", AVERAGE\", and \"QUIT\"" << endl;
   
   Node* head = NULL;
+  char input[20];
   
   while (strcmp(input, "QUIT") != 0) {
     cout << ">> ";
     cin >> input;
     if (strcmp(input, "ADD") == 0) {
-      addStudent(vPtr);
+      char first[20];
+      char last[20];
+      int id;
+      float gpa;
+      cout << "First Name: ";
+      cin >> first;
+      cout << "Last Name: ";
+      cin >> last;
+      cout << "ID: ";
+      cin >> id;
+      cout << "GPA: ";
+      cin >> gpa;
+      Student* newStudent = new Student(first, last, id, gpa);
+      if (head == NULL) {
+	head = new Node(newStudent);
+      } else {
+	addStudent(head, newStudent);
+      }
     } else if (strcmp(input, "PRINT") == 0) {
-      printStudents(vPtr);
+      printStudents(head);
     } else if (strcmp(input, "DELETE") == 0) {
-      deleteStudent(head);
+      if (head == NULL) {
+	cout << "There are no students to delete!" << endl;
+      } else {
+	int id;
+	cout << "ID: ";
+	cin >> id;
+	deleteStudent(head, id);
+      }
     } else if (strcmp(input, "AVERAGE") == 0) {
-      //average GPAs
+      float total;
+      int numStudents;
+      averageGPAs(head, total, numStudents);
     } else if (strcmp(input, "QUIT") != 0) { //anything else (besides quit) will be invalid
       cout << "Invalid command." << endl;
     }
@@ -40,26 +68,50 @@ int main() {
 }
 
 //add a new node (holding a new student) to the linked list
-void add(Node* &head, Student* newStudent) {
+void addStudent(Node* head, Student* newStudent) {
   Node* current = head;
-  if (current == NULL) { //head is NULL, meaning no data in linked list yet
-    head = new Node(newStudent);
-  }
-  else {
-    while (current->getNext() != NULL) { //get to last node in list
-      current = current->getNext();
-    }
+  if (current->getNext() == NULL) {
     current->setNext(new Node(newStudent));
+  } else {
+    addStudent(head->getNext(), newStudent);
   }
 }
 
 //print out the student data of every node in the linked list
-void print(Node* next) {
+void printStudents(Node* next) {
   if (next != NULL) {
     cout << next->getStudent()->getFirst();
     cout << " " << next->getStudent()->getLast();
     cout << ", ID: " << next->getStudent()->getID();
     cout << ", GPA: " << next->getStudent()->getGPA() << endl;
-    print(next->getNext());
+    printStudents(next->getNext());
+  }
+}
+
+//delete the node of the student with the given id
+void deleteStudent(Node* current, int id) {
+  if (current != NULL) {
+    if (current->getNext()->getStudent()->getID() == id) {
+      Node* temp = current->getNext();
+      current->setNext(temp->getNext());
+      delete(temp);
+    } else {
+      deleteStudent(current->getNext(), id);
+    }
+  } else {
+    cout << "There is no student with that ID!" << endl;
+  }
+}
+
+//average all the GPAs and print the value
+void averageGPAs(Node* next, float total, int numStudents) {
+  if (next != NULL) {
+    total += next->getStudent()->getGPA();
+    numStudents++;
+    averageGPAs(next->getNext(), total, numStudents);
+  } else {
+    cout << total << endl;
+    cout << numStudents << endl;
+    cout << (total / float(numStudents)) << endl;
   }
 }
