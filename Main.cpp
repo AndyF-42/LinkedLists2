@@ -41,7 +41,12 @@ int main() {
       Student* newStudent = new Student(first, last, id, gpa);
       if (head == NULL) {
 	head = new Node(newStudent);
-      } else {
+      } else if (head->getStudent()->getID() > id) {
+	Node* temp = head;
+	head = new Node(newStudent);
+	head->setNext(temp);
+      }
+      else {
 	addStudent(head, newStudent);
       }
     } else if (strcmp(input, "PRINT") == 0) { //call print function
@@ -78,8 +83,11 @@ int main() {
 //add a new node (holding a new student) to the linked list
 void addStudent(Node* head, Student* newStudent) {
   Node* current = head;
-  if (current->getNext() == NULL) { //once at the end, connect the last node to new node
-    current->setNext(new Node(newStudent));
+  if (current->getNext() == NULL || current->getNext()->getStudent()->getID() > newStudent->getID()) { //once at the end, connect the last node to new node
+    Node* newNode = new Node(newStudent);
+    newNode->setNext(current->getNext());
+    current->setNext(newNode);
+    
   } else { //recursively search
     addStudent(head->getNext(), newStudent);
   }
